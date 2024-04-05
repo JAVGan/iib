@@ -102,8 +102,9 @@ def test_is_image_fbc(mock_si, skopeo_output, is_fbc):
     assert is_image_fbc(image) is is_fbc
 
 
+@mock.patch('iib.workers.tasks.utils.run_cmd')
 @mock.patch("iib.workers.tasks.fbc_utils.enforce_json_config_dir")
-def test_merge_catalogs_dirs(mock_enforce_json, tmpdir):
+def test_merge_catalogs_dirs(mock_enforce_json, mock_rc, tmpdir):
     source_dir = os.path.join(tmpdir, 'src')
     destination_dir = os.path.join(tmpdir, 'dst')
     os.makedirs(destination_dir, exist_ok=True)
@@ -119,6 +120,18 @@ def test_merge_catalogs_dirs(mock_enforce_json, tmpdir):
         [
             mock.call(source_dir),
             mock.call(destination_dir),
+        ]
+    )
+    mock_rc.assert_has_calls(
+        [
+            mock.call(
+                ['opm', 'validate', source_dir],
+                exc_msg=f'Failed to validate the content from config_dir {source_dir}',
+            ),
+            mock.call(
+                ['opm', 'validate', destination_dir],
+                exc_msg=f'Failed to validate the content from config_dir {destination_dir}',
+            ),
         ]
     )
 

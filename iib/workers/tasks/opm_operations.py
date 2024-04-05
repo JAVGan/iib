@@ -1144,3 +1144,17 @@ class Opm:
         if index_version in opm_versions_config:
             Opm.opm_version = opm_versions_config.get(index_version)
         log.info("OPM version set to %s", Opm.opm_version)
+
+
+def opm_validate(config_dir: str) -> None:
+    """
+    Validate the declarative config files in a given directory.
+
+    :param str config_dir: directory containing the declarative config files.
+    :raises IIBError: if the validation fails
+    """
+    from iib.workers.tasks.utils import run_cmd
+
+    log.debug("Validating JSON files under %s", config_dir)
+    cmd = ['opm', 'validate', config_dir]
+    run_cmd(cmd, exc_msg=f'Failed to validate the content from config_dir {config_dir}')

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import ruamel.yaml
 from typing import Tuple
+
 from iib.exceptions import IIBError
 from iib.workers.config import get_worker_config
 from iib.common.tracing import instrument_tracing
@@ -85,12 +86,15 @@ def merge_catalogs_dirs(src_config: str, dest_config: str):
     :param str src_config: source config directory
     :param str dest_config: destination config directory
     """
+    from iib.workers.tasks.opm_operations import opm_validate
+
     for conf_dir in (src_config, dest_config):
         if not os.path.isdir(conf_dir):
             msg = f"config directory does not exist: {conf_dir}"
             log.error(msg)
             raise IIBError(msg)
         enforce_json_config_dir(conf_dir)
+        opm_validate(conf_dir)
 
     log.info("Merging config folders: %s to %s", src_config, dest_config)
     shutil.copytree(src_config, dest_config, dirs_exist_ok=True)
